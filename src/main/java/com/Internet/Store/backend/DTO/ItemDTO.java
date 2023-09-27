@@ -1,4 +1,6 @@
 package com.Internet.Store.backend.DTO;
 
-public record ItemDTO(String name, String description, String image, int price) {
+import com.Internet.Store.backend.Models.Category;
+
+public record ItemDTO(String name, String description, String image, int price, Long idCategory) {
 }

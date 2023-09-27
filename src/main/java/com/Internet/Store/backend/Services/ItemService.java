@@ -1,8 +1,9 @@
 package com.Internet.Store.backend.Services;
 
 import com.Internet.Store.backend.DTO.ItemDTO;
+import com.Internet.Store.backend.Models.Category;
 import com.Internet.Store.backend.Models.Item;
-import com.Internet.Store.backend.Repositories.ItemRepository;
+import com.Internet.Store.backend.Repositories.ItemsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +15,18 @@ import java.util.UUID;
 @Service
 public class ItemService {
 
-    private final ItemRepository itemRepository;
+    private final ItemsRepository itemsRepository;
+
+    private final CategoryService categoryService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
+    public ItemService(ItemsRepository itemsRepository, CategoryService categoryService) {
+        this.itemsRepository = itemsRepository;
+        this.categoryService = categoryService;
     }
 
     public List<Item> getAll() {
-        return itemRepository.findAll();
+        return itemsRepository.findAll();
     }
 
     public Long generateId() {
@@ -30,7 +34,7 @@ public class ItemService {
         while (count < 100) {
             String uuid = String.format("%06d", new BigInteger(UUID.randomUUID().toString().replace("-", ""), 16));
             Long id = Long.valueOf(uuid.substring(0, 6));
-            Optional<Item> item = itemRepository.findById(id);
+            Optional<Item> item = itemsRepository.findById(id);
             if (item.isEmpty()) {
                 return id;
             }
@@ -42,8 +46,16 @@ public class ItemService {
 
     public Item create(ItemDTO itemDTO) {
         Long id = generateId();
-        Item newItem = new Item(id, itemDTO.name(), itemDTO.description(), itemDTO.image(), itemDTO.price());
-        return itemRepository.save(newItem);
+        Category category = categoryService.getCategoryById(itemDTO.idCategory());
+        Item newItem = new Item(id, itemDTO, category);
+        itemsRepository.save(newItem);
+        boolean isSuccess = categoryService.addItemToSelectedCategory(newItem, category);
+        if (isSuccess) {
+            return newItem;
+        } else {
+            throw new RuntimeException("Item not saved in the list");
+        }
+
     }
 
     public Item update(ItemDTO itemDTO, Item existItem) {
@@ -63,11 +75,17 @@ public class ItemService {
             existItem.setPrice(itemDTO.price());
         }
 
-        return itemRepository.save(existItem);
+        if (itemDTO.idCategory() != 0) {
+            Category category = categoryService.getCategoryById(itemDTO.idCategory());
+            existItem.setCategory(category);
+        }
+
+        return itemsRepository.save(existItem);
     }
 
     public boolean delete(Item item) {
-        itemRepository.delete(item);
+        categoryService.removeItemFromSelectedCategory(item, item.getCategory());
+        itemsRepository.delete(item);
         return true;
     }
 }

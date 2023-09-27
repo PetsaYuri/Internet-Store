@@ -1,5 +1,9 @@
 package com.Internet.Store.backend.Models;
 
+import com.Internet.Store.backend.DTO.ItemDTO;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,12 +13,22 @@ public class Item {
 
     public Item() {}
 
-    public Item(Long id, String name, String description, String image, int price) {
+    public Item(Long id, String name, String description, String image, int price, Category category) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.image = image;
         this.price = price;
+        this.category = category;
+    }
+
+    public Item(Long id, ItemDTO itemDTO, Category category) {
+        this.id = id;
+        this.name = itemDTO.name();
+        this.description = itemDTO.description();
+        this.image = itemDTO.image();
+        this.price = itemDTO.price();
+        this.category = category;
     }
 
     @Id()
@@ -25,6 +39,10 @@ public class Item {
 
     @Column(nullable = false)
     private int price;
+
+    @ManyToOne
+    @JsonBackReference
+    private Category category;
 
     public Long getId() {
         return id;
@@ -60,5 +78,13 @@ public class Item {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

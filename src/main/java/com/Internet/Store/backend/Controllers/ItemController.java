@@ -26,19 +26,19 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ItemDTO getOne(@PathVariable("id") Item item) {
-        return new ItemDTO(item.getName(), item.getDescription(), item.getImage(), item.getPrice());
+        return new ItemDTO(item.getName(), item.getDescription(), item.getImage(), item.getPrice(), item.getCategory().getId());
     }
 
     @PostMapping
     public ItemDTO create(@RequestBody ItemDTO itemDTO) {
         Item newItem = itemService.create(itemDTO);
-        return new ItemDTO(newItem.getName(), newItem.getDescription(), newItem.getImage(), newItem.getPrice());
+        return new ItemDTO(newItem.getName(), newItem.getDescription(), newItem.getImage(), newItem.getPrice(), newItem.getCategory().getId());
     }
 
     @PutMapping("/{id}")
     public ItemDTO update(@RequestBody ItemDTO itemDTO, @PathVariable("id") Item existItem) {
         Item updatedItem = itemService.update(itemDTO, existItem);
-        return new ItemDTO(updatedItem.getName(), updatedItem.getDescription(), updatedItem.getImage(), updatedItem.getPrice());
+        return new ItemDTO(updatedItem.getName(), updatedItem.getDescription(), updatedItem.getImage(), updatedItem.getPrice(), updatedItem.getCategory().getId());
     }
 
     @DeleteMapping("/{id}")
