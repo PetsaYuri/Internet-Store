@@ -5,8 +5,8 @@ import com.Internet.Store.backend.Exception.Users.EmailAlreadyExistException;
 import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -22,6 +22,10 @@ public class UserService {
 
     public List<User> getAll() {
         return usersRepository.findAll();
+    }
+
+    public User findUserByEmail(String email) {
+        return usersRepository.findByEmail(email);
     }
 
     public User create(UserDTO userDTO) {
