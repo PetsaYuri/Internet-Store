@@ -24,7 +24,7 @@ public class CustomAuthProvider implements AuthenticationProvider {
     }
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        User user = userService.findUserByEmail(authentication.getName());
+        User user = userService.getUserByEmail(authentication.getName());
         BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
 
         if (!bCrypt.matches(authentication.getCredentials().toString(), user.getPassword())) {

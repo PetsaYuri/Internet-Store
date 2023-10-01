@@ -4,6 +4,7 @@ import com.Internet.Store.backend.DTO.UserDTO;
 import com.Internet.Store.backend.Exception.Users.EmailAlreadyExistException;
 import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.UsersRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,12 @@ public class UserService {
         return usersRepository.findAll();
     }
 
-    public User findUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         return usersRepository.findByEmail(email);
+    }
+
+    public User getUserById(Long id) {
+        return usersRepository.getReferenceById(id);
     }
 
     public User create(UserDTO userDTO) {
@@ -40,13 +45,18 @@ public class UserService {
         }
     }
 
-    public User update(UserDTO userDTO, User existUser) {
+    public User update(UserDTO userDTO, Long id) {
+        User existUser = usersRepository.getReferenceById(id);
         if (userDTO.name() != null) {
             existUser.setName(userDTO.name());
         }
 
         if (userDTO.email() != null && !existUser.getEmail().equals(userDTO.email())) {
-            existUser.setEmail(userDTO.email());
+            if (usersRepository.findByEmail(userDTO.email()) == null) {
+                existUser.setEmail(userDTO.email());
+            }   else {
+                throw new EmailAlreadyExistException();
+            }
         }
 
         if (userDTO.password() != null) {
@@ -58,7 +68,12 @@ public class UserService {
         return usersRepository.save(existUser);
     }
 
-    public boolean delete(User user) {
+    public boolean delete(Long id) {
+        if (!usersRepository.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+
+        User user = usersRepository.getReferenceById(id);
         usersRepository.delete(user);
         return true;
     }

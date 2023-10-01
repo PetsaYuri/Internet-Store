@@ -4,6 +4,7 @@ import com.Internet.Store.backend.DTO.ItemDTO;
 import com.Internet.Store.backend.Models.Category;
 import com.Internet.Store.backend.Models.Item;
 import com.Internet.Store.backend.Repositories.ItemsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,10 @@ public class ItemService {
 
     public List<Item> getAll() {
         return itemsRepository.findAll();
+    }
+
+    public Item getItemById(Long id) throws EntityNotFoundException {
+        return itemsRepository.getReferenceById(id);
     }
 
     public Long generateId() {
@@ -58,7 +63,8 @@ public class ItemService {
 
     }
 
-    public Item update(ItemDTO itemDTO, Item existItem) {
+    public Item update(ItemDTO itemDTO, Long id) {
+        Item existItem = itemsRepository.getReferenceById(id);
         if (itemDTO.name() != null) {
             existItem.setName(itemDTO.name());
         }
@@ -75,7 +81,7 @@ public class ItemService {
             existItem.setPrice(itemDTO.price());
         }
 
-        if (itemDTO.idCategory() != 0) {
+        if (itemDTO.idCategory() != null) {
             Category category = categoryService.getCategoryById(itemDTO.idCategory());
             existItem.setCategory(category);
         }
@@ -83,7 +89,8 @@ public class ItemService {
         return itemsRepository.save(existItem);
     }
 
-    public boolean delete(Item item) {
+    public boolean delete(Long id) {
+        Item item = itemsRepository.getReferenceById(id);
         categoryService.removeItemFromSelectedCategory(item, item.getCategory());
         itemsRepository.delete(item);
         return true;

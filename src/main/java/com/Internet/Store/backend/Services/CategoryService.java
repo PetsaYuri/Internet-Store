@@ -33,7 +33,8 @@ public class CategoryService {
         return categoriesRepository.save(newCategory);
     }
 
-    public Category update(Category existCategory, CategoryDTO categoryDTO) {
+    public Category update(Long id, CategoryDTO categoryDTO) {
+        Category existCategory = categoriesRepository.getReferenceById(id);
         if (categoryDTO.title() != null) {
             existCategory.setTitle(categoryDTO.title());
         }
@@ -45,7 +46,11 @@ public class CategoryService {
         return categoriesRepository.save(existCategory);
     }
 
-    public boolean delete(Category category) {
+    public boolean delete(Long id) {
+        if (!categoriesRepository.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+        Category category = categoriesRepository.getReferenceById(id);
         categoriesRepository.delete(category);
         return true;
     }

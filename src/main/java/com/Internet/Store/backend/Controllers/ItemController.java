@@ -3,8 +3,16 @@ package com.Internet.Store.backend.Controllers;
 import com.Internet.Store.backend.DTO.ItemDTO;
 import com.Internet.Store.backend.Models.Item;
 import com.Internet.Store.backend.Services.ItemService;
+import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.PropertyValueException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,24 +33,43 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public ItemDTO getOne(@PathVariable("id") Item item) {
-        return new ItemDTO(item.getName(), item.getDescription(), item.getImage(), item.getPrice(), item.getCategory().getId());
+    public ItemDTO getOne(@PathVariable("id") Long id) {
+        try {
+            Item item = itemService.getItemById(id);
+            return new ItemDTO(item.getName(), item.getDescription(), item.getImage(), item.getPrice(), item.getCategory().getId());
+        }   catch (EntityNotFoundException ex) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found", ex);
+        }
     }
 
     @PostMapping
     public ItemDTO create(@RequestBody ItemDTO itemDTO) {
-        Item newItem = itemService.create(itemDTO);
-        return new ItemDTO(newItem.getName(), newItem.getDescription(), newItem.getImage(), newItem.getPrice(), newItem.getCategory().getId());
+        try {
+            Item newItem = itemService.create(itemDTO);
+            return new ItemDTO(newItem.getName(), newItem.getDescription(), newItem.getImage(), newItem.getPrice(), newItem.getCategory().getId());
+        }   catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written", ex);
+        }
     }
 
     @PutMapping("/{id}")
-    public ItemDTO update(@RequestBody ItemDTO itemDTO, @PathVariable("id") Item existItem) {
-        Item updatedItem = itemService.update(itemDTO, existItem);
-        return new ItemDTO(updatedItem.getName(), updatedItem.getDescription(), updatedItem.getImage(), updatedItem.getPrice(), updatedItem.getCategory().getId());
+    public ItemDTO update(@RequestBody ItemDTO itemDTO, @PathVariable("id") Long id) {
+        try {
+            Item updatedItem = itemService.update(itemDTO, id);
+            return new ItemDTO(updatedItem.getName(), updatedItem.getDescription(), updatedItem.getImage(), updatedItem.getPrice(), updatedItem.getCategory().getId());
+        }   catch (EntityNotFoundException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found", ex);
+        }   catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException((HttpStatus.BAD_REQUEST), "The body is not fully written", ex);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable("id") Item item) {
-        return itemService.delete(item);
+    public boolean delete(@PathVariable("id") Long id) {
+        try {
+            return itemService.delete(id);
+        }   catch (EntityNotFoundException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found", ex);
+        }
     }
 }
