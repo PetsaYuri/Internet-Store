@@ -1,14 +1,19 @@
 package com.Internet.Store.backend.Models;
 
 import com.Internet.Store.backend.DTO.ItemDTO;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "items")
-@Embeddable
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Item {
 
     public Item() {}
@@ -20,6 +25,8 @@ public class Item {
         this.image = image;
         this.price = price;
         this.category = category;
+        listOfWillingUsers = new ArrayList<>();
+        orders = new ArrayList<>();
     }
 
     public Item(Long id, ItemDTO itemDTO, Category category) {
@@ -29,6 +36,8 @@ public class Item {
         this.image = itemDTO.image();
         this.price = itemDTO.price();
         this.category = category;
+        listOfWillingUsers = new ArrayList<>();
+        orders = new ArrayList<>();
     }
 
     @Id()
@@ -41,8 +50,15 @@ public class Item {
     private int price;
 
     @ManyToOne
-    @JsonBackReference
     private Category category;
+
+    @ManyToMany
+    @JsonIgnore
+    private List<User> listOfWillingUsers;
+
+    @ManyToMany
+    @JsonIgnore
+    private List<Order> orders;
 
     public Long getId() {
         return id;
@@ -86,5 +102,21 @@ public class Item {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<User> getListOfWillingUsers() {
+        return listOfWillingUsers;
+    }
+
+    public void setListOfWillingUsers(List<User> listOfWillingUsers) {
+        this.listOfWillingUsers = listOfWillingUsers;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }

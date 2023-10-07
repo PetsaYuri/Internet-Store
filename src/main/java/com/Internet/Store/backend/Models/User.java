@@ -1,10 +1,18 @@
 package com.Internet.Store.backend.Models;
 
 import com.Internet.Store.backend.DTO.UserDTO;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     public User() {}
@@ -15,6 +23,8 @@ public class User {
         password = encryptedPassword;
         permission = "user";
         isBlocked = false;
+        basket = new ArrayList<>();
+        orders = new ArrayList<>();
     }
 
     public User(String encryptedPassword, UserDTO userDTO) {
@@ -23,6 +33,8 @@ public class User {
         email = userDTO.email();
         permission = "user";
         isBlocked = false;
+        basket = new ArrayList<>();
+        orders = new ArrayList<>();
     }
 
     @Id
@@ -34,6 +46,12 @@ public class User {
 
     @Column
     private boolean isBlocked;
+
+    @ManyToMany
+    private List<Item> basket;
+
+    @OneToMany
+    private List<Order> orders;
 
     public Long getId() {
         return id;
@@ -81,5 +99,21 @@ public class User {
 
     public void setBlocked(boolean blocked) {
         isBlocked = blocked;
+    }
+
+    public List<Item> getBasket() {
+        return basket;
+    }
+
+    public void setBasket(List<Item> basket) {
+        this.basket = basket;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 }

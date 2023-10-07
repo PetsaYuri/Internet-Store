@@ -28,16 +28,40 @@ public class UserController {
     @GetMapping
     public List<UserDTO> getAll() {
         List<User> users = userService.getAll();
-        return users.stream().map(user -> new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked())).collect(Collectors.toList());
+        return users.stream().map(user ->
+                new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked(), user.getBasket(), user.getOrders())).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public UserDTO getOne(@PathVariable("id") Long id) {
         try {
             User user = userService.getUserById(id);
-            return new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked());
+            return new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked(), user.getBasket(), user.getOrders());
         }   catch (EntityNotFoundException ex) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+    }
+
+    @GetMapping("/profile")
+    public UserDTO viewYourProfile() {
+        try {
+            User user = userService.getUserDetails();
+            return new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked(), user.getBasket(), user.getOrders());
+        }   catch (EntityNotFoundException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You must be authorised");
+        }
+    }
+
+    @PostMapping("/signup")
+    public UserDTO signUp(@RequestBody UserDTO userDTO) {
+        try {
+            User createdUser = userService.create(userDTO);
+            return new UserDTO(createdUser.getName(), createdUser.getEmail(), null, createdUser.getPermission(), createdUser.isBlocked(), createdUser.getBasket(),
+                    createdUser.getOrders());
+        }   catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written");
+        }   catch (EmailAlreadyExistException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
     }
 
@@ -45,7 +69,7 @@ public class UserController {
     public UserDTO create(@RequestBody UserDTO userDTO) {
         try {
             User newUser = userService.create(userDTO);
-            return new UserDTO(newUser.getName(), newUser.getEmail(), null, newUser.getPermission(), newUser.isBlocked());
+            return new UserDTO(newUser.getName(), newUser.getEmail(), null, newUser.getPermission(), newUser.isBlocked(), newUser.getBasket(), newUser.getOrders());
         }   catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written");
         }   catch (EmailAlreadyExistException ex) {
@@ -57,7 +81,8 @@ public class UserController {
     public UserDTO update(@RequestBody UserDTO userDTO, @PathVariable("id") Long id) {
         try {
             User updatedUser = userService.update(userDTO, id);
-            return new UserDTO(updatedUser.getName(), updatedUser.getEmail(), null, updatedUser.getPermission(), updatedUser.isBlocked());
+            return new UserDTO(updatedUser.getName(), updatedUser.getEmail(), null, updatedUser.getPermission(), updatedUser.isBlocked(), updatedUser.getBasket(),
+                    updatedUser.getOrders());
         }   catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written");
         }   catch (EntityNotFoundException ex) {

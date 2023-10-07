@@ -1,7 +1,9 @@
 package com.Internet.Store.backend.Models;
 
 import com.Internet.Store.backend.DTO.CategoryDTO;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Category {
 
     public Category() {}
@@ -16,13 +19,13 @@ public class Category {
     public Category(String title, String description) {
         this.title = title;
         this.description = description;
-        this.items = new ArrayList<>();
+        items = new ArrayList<>();
     }
 
     public Category(CategoryDTO categoryDTO) {
         this.title = categoryDTO.title();
         this.description = categoryDTO.description();
-        this.items = new ArrayList<>();
+        items = new ArrayList<>();
     }
 
     @Id
@@ -33,7 +36,7 @@ public class Category {
     private String title, description;
 
     @OneToMany
-    @JsonManagedReference
+    @JsonIgnore
     private List<Item> items;
 
     public Long getId() {

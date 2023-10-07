@@ -1,14 +1,19 @@
 package com.Internet.Store.backend.Services;
 
 import com.Internet.Store.backend.DTO.UserDTO;
+import com.Internet.Store.backend.Exception.Items.ItemIsAlreadyInBasketException;
 import com.Internet.Store.backend.Exception.Users.EmailAlreadyExistException;
+import com.Internet.Store.backend.Models.Item;
+import com.Internet.Store.backend.Models.Order;
 import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -76,5 +81,33 @@ public class UserService {
         User user = usersRepository.getReferenceById(id);
         usersRepository.delete(user);
         return true;
+    }
+
+    public void addItemToBasket(User user, Item item) {
+        if (user.getBasket().contains(item)) {
+            throw new ItemIsAlreadyInBasketException();
+        }
+
+        user.getBasket().add(item);
+        usersRepository.save(user);
+    }
+
+    public User getUserDetails() {
+        User user = usersRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+        if (user == null) {
+            throw new EntityNotFoundException();
+        }
+
+        return user;
+    }
+
+    public void addOrderToCustomer(User customer, Order order) {
+        customer.getOrders().add(order);
+        usersRepository.save(customer);
+    }
+
+    public void deleteOrderFromCustomer(User customer) {
+        customer.setOrders(new ArrayList<>());
+        usersRepository.save(customer);
     }
 }
