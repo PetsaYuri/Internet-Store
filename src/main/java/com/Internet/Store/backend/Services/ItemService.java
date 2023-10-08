@@ -8,6 +8,7 @@ import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.ItemsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -34,8 +34,25 @@ public class ItemService {
         this.userService = userService;
     }
 
-    public List<Item> getAll() {
-        return itemsRepository.findAll();
+    public List<Item> getAll(Pageable pageable) {
+        return itemsRepository.findAll(pageable).toList();
+    }
+
+    public List<Item> getItemsByTitle(String title, Pageable pageable) {
+        return itemsRepository.findByNameIsContaining(title, pageable).toList();
+    }
+
+    public List<Item> getItemsByCategory(String categoryTitle, Pageable pageable) {
+        Category category = categoryService.getCategoryByTitle(categoryTitle);
+        if (category == null) {
+            throw new EntityNotFoundException();
+        }
+
+        return itemsRepository.findByCategory(category, pageable).toList();
+    }
+
+    public List<Item> getItemsByPrice(String price, Pageable pageable) {
+        return itemsRepository.findByPrice(Integer.parseInt(price), pageable).toList();
     }
 
     public Item getItemById(Long id) throws EntityNotFoundException {

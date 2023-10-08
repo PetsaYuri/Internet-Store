@@ -10,6 +10,7 @@ import com.Internet.Store.backend.Services.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,8 +32,26 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<Item> getAll() {
-        return itemService.getAll();
+    public List<Item> getAll(@RequestParam(name = "search", required = false) String title, @RequestParam(name = "category", required = false) String categoryTitle,
+                             @RequestParam(name = "price", required = false) String price, @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                             @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        try {
+            if (title != null) {
+                return itemService.getItemsByTitle(title, PageRequest.of(page, size));
+            }   else if (categoryTitle != null) {
+                return itemService.getItemsByCategory(categoryTitle, PageRequest.of(page, size));
+            }   else if(price != null) {
+                return itemService.getItemsByPrice(price, PageRequest.of(page, size));
+            }   else {
+                return itemService.getAll(PageRequest.of(page, size));
+            }
+        }   catch (NumberFormatException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The price was written incorrectly");
+        }   catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }   catch (EntityNotFoundException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This category doesn't exist");
+        }
     }
 
     @GetMapping("/{id}")

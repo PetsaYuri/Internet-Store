@@ -1,6 +1,7 @@
 package com.Internet.Store.backend.Controllers;
 
 import com.Internet.Store.backend.DTO.CategoryDTO;
+import com.Internet.Store.backend.Exception.Categories.CategoryAlreadyExistException;
 import com.Internet.Store.backend.Models.Category;
 import com.Internet.Store.backend.Services.CategoryService;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,8 +44,10 @@ public class CategoryController {
         try {
             Category newCategory = categoryService.create(categoryDTO);
             return new CategoryDTO(newCategory.getTitle(), newCategory.getDescription(), newCategory.getItems());
-        } catch (DataIntegrityViolationException ex) {
+        }   catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written", ex);
+        }   catch (CategoryAlreadyExistException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
     }
 
@@ -57,6 +60,8 @@ public class CategoryController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
         }   catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The body is not fully written");
+        }   catch (CategoryAlreadyExistException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
     }
 

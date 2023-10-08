@@ -5,6 +5,7 @@ import com.Internet.Store.backend.Models.Order;
 import com.Internet.Store.backend.Services.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,8 +23,20 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<Order> getAll() {
-        return orderService.getAll();
+    public List<Order> getAll(@RequestParam(name = "state", required = false) String state, @RequestParam(name = "phone", required = false) String phone,
+                              @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                              @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        try {
+            if (state != null) {
+                return orderService.getOrdersByState(state, PageRequest.of(page, size));
+            }   else if(phone != null) {
+                return orderService.getOrdersByPhone(phone, PageRequest.of(page, size));
+            }   else {
+                return orderService.getAll(PageRequest.of(page, size));
+            }
+        }   catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

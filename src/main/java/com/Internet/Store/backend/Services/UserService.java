@@ -9,6 +9,7 @@ import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,16 @@ public class UserService {
         this.usersRepository = usersRepository;
     }
 
-    public List<User> getAll() {
-        return usersRepository.findAll();
+    public List<User> getAll(Pageable pageable) {
+        return usersRepository.findAll(pageable).toList();
+    }
+
+    public List<User> getUsersByPermission(String permission, Pageable pageable) {
+        return usersRepository.findByPermission(permission, pageable).toList();
+    }
+
+    public List<User> getUsersByBlocked(boolean isBlocked, Pageable pageable) {
+        return usersRepository.findByIsBlocked(isBlocked, pageable).toList();
     }
 
     public User getUserByEmail(String email) {

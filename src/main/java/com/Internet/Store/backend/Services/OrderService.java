@@ -8,11 +8,11 @@ import com.Internet.Store.backend.Models.User;
 import com.Internet.Store.backend.Repositories.OrdersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,8 +47,16 @@ public class OrderService {
         throw new RuntimeException();
     }
 
-    public List<Order> getAll() {
-        return ordersRepository.findAll();
+    public List<Order> getAll(Pageable pageable) {
+        return ordersRepository.findAll(pageable).toList();
+    }
+
+    public List<Order> getOrdersByState(String state, Pageable pageable) {
+        return ordersRepository.findByState(state, pageable).toList();
+    }
+
+    public List<Order> getOrdersByPhone(String phone, Pageable pageable) {
+        return ordersRepository.findByPhone(phone, pageable).toList();
     }
 
     public Order getOne(Long id) {

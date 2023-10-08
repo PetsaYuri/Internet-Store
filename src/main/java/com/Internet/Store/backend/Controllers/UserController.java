@@ -7,6 +7,7 @@ import com.Internet.Store.backend.Services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,10 +27,24 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserDTO> getAll() {
-        List<User> users = userService.getAll();
-        return users.stream().map(user ->
-                new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked(), user.getBasket(), user.getOrders())).collect(Collectors.toList());
+    public List<UserDTO> getAll(@RequestParam(name = "permission", required = false) String permission, @RequestParam(name = "isBlocked", required = false) String isBlocked,
+                                @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        try {
+            List<User> users;
+            if (permission != null) {
+                users = userService.getUsersByPermission(permission, PageRequest.of(page, size));
+            }   else if(isBlocked != null) {
+                users = userService.getUsersByBlocked(Boolean.parseBoolean(isBlocked), PageRequest.of(page, size));
+            }   else {
+                users = userService.getAll(PageRequest.of(page, size));
+            }
+
+            return users.stream().map(user ->
+                    new UserDTO(user.getName(), user.getEmail(), null, user.getPermission(), user.isBlocked(), user.getBasket(), user.getOrders())).collect(Collectors.toList());
+        }   catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
     }
 
     @GetMapping("/{id}")

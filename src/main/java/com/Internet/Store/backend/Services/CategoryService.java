@@ -1,6 +1,7 @@
 package com.Internet.Store.backend.Services;
 
 import com.Internet.Store.backend.DTO.CategoryDTO;
+import com.Internet.Store.backend.Exception.Categories.CategoryAlreadyExistException;
 import com.Internet.Store.backend.Models.Category;
 import com.Internet.Store.backend.Models.Item;
 import com.Internet.Store.backend.Repositories.CategoriesRepository;
@@ -28,7 +29,15 @@ public class CategoryService {
         return categoriesRepository.getReferenceById(id);
     }
 
+    public Category getCategoryByTitle(String title) {
+        return categoriesRepository.findByTitle(title);
+    }
+
     public Category create(CategoryDTO categoryDTO) {
+        Category existCategory = categoriesRepository.findByTitle(categoryDTO.title());
+        if (existCategory != null) {
+            throw new CategoryAlreadyExistException("The category with this title already exists");
+        }
         Category newCategory = new Category(categoryDTO);
         return categoriesRepository.save(newCategory);
     }
@@ -36,6 +45,10 @@ public class CategoryService {
     public Category update(Long id, CategoryDTO categoryDTO) {
         Category existCategory = categoriesRepository.getReferenceById(id);
         if (categoryDTO.title() != null) {
+            Category category = categoriesRepository.findByTitle(categoryDTO.title());
+            if (category != null) {
+                throw new CategoryAlreadyExistException("The category with this title already exists");
+            }
             existCategory.setTitle(categoryDTO.title());
         }
 
